@@ -1,0 +1,1431 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InstaUnfollowers Analyzer — 100% Private Client-Side Instagram Follower Tool</title>
+    <meta name="description" content="Find who doesn't follow you back on Instagram. 100% client-side, zero server uploads, safe and private analysis of your Instagram HTML export files." />
+    <meta property="og:title" content="InstaUnfollowers Analyzer" />
+    <meta property="og:description" content="Find who doesn't follow you back on Instagram. 100% client-side and private." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+              mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+            },
+            colors: {
+              primary: {
+                DEFAULT: '#18181b', // zinc-900
+                foreground: '#fafafa',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom hairline utilities & custom scrollbar */
+      * {
+        border-color: rgba(228, 228, 231, 0.8);
+      }
+      .dark * {
+        border-color: rgba(39, 39, 42, 0.8);
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(161, 161, 170, 0.3);
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(161, 161, 170, 0.5);
+      }
+      .dropzone-active {
+        border-color: #18181b !important;
+        background-color: #f4f4f5 !important;
+      }
+      .dark .dropzone-active {
+        border-color: #fafafa !important;
+        background-color: #27272a !important;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-zinc-50 text-zinc-900 antialiased selection:bg-zinc-900 selection:text-white dark:bg-zinc-950 dark:text-zinc-100 font-sans transition-colors duration-200">
+    
+    <!-- Top Navigation Bar (Strict 3-zone Top Bar Contract) -->
+    <header class="sticky top-0 z-40 w-full border-b border-zinc-200/80 bg-white/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/80">
+      <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <!-- Zone 1: Single Brand Wordmark -->
+        <div class="flex items-center gap-3">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-900 text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="17" y1="8" x2="23" y2="14"/>
+              <line x1="23" y1="8" x2="17" y2="14"/>
+            </svg>
+          </div>
+          <span class="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+            InstaUnfollowers
+          </span>
+        </div>
+
+        <!-- Zone 2: Navigation / Info link -->
+        <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          <a href="#how-it-works" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">How to Export Files</a>
+          <a href="#privacy-guarantee" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">Privacy Guarantee</a>
+          <a href="#analyzer-tool" class="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">Analyzer</a>
+        </nav>
+
+        <!-- Zone 3: Actions (Demo data + Theme toggle) -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button id="btn-load-sample" type="button" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-xs hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition-all whitespace-nowrap">
+            <svg class="h-3.5 w-3.5 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            <span>Load Demo Data</span>
+          </button>
+
+          <button id="btn-theme-toggle" type="button" aria-label="Toggle dark mode" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 shadow-xs hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-all">
+            <!-- Sun icon -->
+            <svg id="icon-sun" class="hidden h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/>
+              <line x1="12" y1="1" x2="12" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/>
+              <line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <!-- Moon icon -->
+            <svg id="icon-moon" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+      
+      <!-- Hero / Introduction Section -->
+      <section class="mb-10 text-center sm:mb-14">
+        <!-- Quiet Category Pill / Badge -->
+        <div class="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-600 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 mb-4">
+          <span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+          <span>Zero Server Storage &middot; No Password Required</span>
+        </div>
+
+        <h1 class="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl lg:text-5xl dark:text-zinc-50 max-w-3xl mx-auto" style="text-wrap: balance;">
+          Find who doesn't follow you back on Instagram
+        </h1>
+        
+        <p class="mx-auto mt-4 max-w-2xl text-base text-zinc-600 dark:text-zinc-400">
+          Compare your official Instagram data export files locally in your browser. 
+          Never give your Instagram credentials to suspicious third-party apps or risk account bans.
+        </p>
+
+        <!-- Security Reassurance Banner -->
+        <div id="privacy-guarantee" class="mt-6 mx-auto inline-flex max-w-xl items-center gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-50/60 px-4 py-2 text-xs text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-950/30 dark:text-emerald-300">
+          <svg class="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          <span class="text-left font-medium">
+            <strong>100% Client-Side Privacy:</strong> Your files are processed entirely in your browser memory and are never uploaded to any external server.
+          </span>
+        </div>
+      </section>
+
+      <!-- Step-by-Step Accordion / Guide (Collapsible) -->
+      <section id="how-it-works" class="mb-10 rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/60">
+        <details class="group cursor-pointer">
+          <summary class="flex items-center justify-between list-none text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+            <div class="flex items-center gap-2.5">
+              <div class="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-100 text-xs font-bold text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">?</div>
+              <span>How do I get my <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-xs dark:bg-zinc-800">followers_1.html</code> and <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-xs dark:bg-zinc-800">following.html</code> files from Instagram?</span>
+            </div>
+            <svg class="h-4 w-4 text-zinc-500 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </summary>
+          <div class="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400 grid gap-3 sm:grid-cols-4">
+            <div class="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3.5 dark:border-zinc-800/80 dark:bg-zinc-800/40">
+              <span class="font-mono text-zinc-400 dark:text-zinc-500 font-semibold block mb-1">STEP 1</span>
+              <p class="font-medium text-zinc-900 dark:text-zinc-200 mb-1">Open Accounts Center</p>
+              <p>In Instagram Settings or Web, click <strong>Accounts Center</strong> &rarr; <strong>Your information and permissions</strong>.</p>
+            </div>
+            <div class="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3.5 dark:border-zinc-800/80 dark:bg-zinc-800/40">
+              <span class="font-mono text-zinc-400 dark:text-zinc-500 font-semibold block mb-1">STEP 2</span>
+              <p class="font-medium text-zinc-900 dark:text-zinc-200 mb-1">Download Information</p>
+              <p>Click <strong>Download your information</strong> &rarr; <strong>Download or transfer information</strong> &rarr; Choose your profile.</p>
+            </div>
+            <div class="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3.5 dark:border-zinc-800/80 dark:bg-zinc-800/40">
+              <span class="font-mono text-zinc-400 dark:text-zinc-500 font-semibold block mb-1">STEP 3</span>
+              <p class="font-medium text-zinc-900 dark:text-zinc-200 mb-1">Select Format: HTML</p>
+              <p>Select <strong>Some of your information</strong> &rarr; check <strong>Followers and following</strong>. Choose format: <strong>HTML</strong>, Date range: <strong>All time</strong>.</p>
+            </div>
+            <div class="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3.5 dark:border-zinc-800/80 dark:bg-zinc-800/40">
+              <span class="font-mono text-zinc-400 dark:text-zinc-500 font-semibold block mb-1">STEP 4</span>
+              <p class="font-medium text-zinc-900 dark:text-zinc-200 mb-1">Extract & Upload</p>
+              <p>Unzip the file you receive. Open <code class="font-mono text-zinc-800 dark:text-zinc-200">connections/followers_and_following/</code> to find <code class="font-mono">followers_1.html</code> and <code class="font-mono">following.html</code>.</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Upload Zones Section -->
+      <section id="analyzer-tool" class="mb-10">
+        <div class="grid gap-6 md:grid-cols-2">
+          
+          <!-- Zone 1: followers_1.html -->
+          <div class="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/70 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">1</span>
+                  <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Followers File</h3>
+                </div>
+                <span id="badge-followers" class="hidden inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Ready</span>
+                </span>
+              </div>
+              <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+                Upload <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">followers_1.html</code> (The accounts following you).
+              </p>
+
+              <!-- Drag and Drop Area -->
+              <div id="dropzone-followers" class="relative group flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 p-8 text-center hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-700 transition-all cursor-pointer bg-zinc-50/50 dark:bg-zinc-950/40">
+                <input id="input-followers" type="file" accept=".html,.htm,.json" class="absolute inset-0 h-full w-full opacity-0 cursor-pointer" />
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 mb-3 group-hover:scale-105 transition-transform">
+                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1">
+                  Drag & drop <span class="text-zinc-900 font-semibold dark:text-white">followers_1.html</span>
+                </p>
+                <p class="text-xs text-zinc-400 dark:text-zinc-500">or click to browse from device</p>
+              </div>
+            </div>
+
+            <!-- Uploaded file details info box (Initially hidden) -->
+            <div id="info-followers" class="hidden mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
+              <div class="flex items-center gap-2 truncate pr-2">
+                <svg class="h-4 w-4 text-emerald-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span id="name-followers" class="font-mono truncate font-medium text-zinc-900 dark:text-zinc-100">followers_1.html</span>
+                <span id="count-followers" class="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 font-mono">0 users</span>
+              </div>
+              <button id="btn-remove-followers" type="button" class="text-xs text-rose-500 hover:text-rose-600 dark:text-rose-400 hover:underline shrink-0">
+                Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- Zone 2: following.html -->
+          <div class="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/70 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">2</span>
+                  <h3 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Following File</h3>
+                </div>
+                <span id="badge-following" class="hidden inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                  <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Ready</span>
+                </span>
+              </div>
+              <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-4">
+                Upload <code class="rounded bg-zinc-100 px-1 py-0.5 font-mono text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">following.html</code> (The accounts you follow).
+              </p>
+
+              <!-- Drag and Drop Area -->
+              <div id="dropzone-following" class="relative group flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 p-8 text-center hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-700 transition-all cursor-pointer bg-zinc-50/50 dark:bg-zinc-950/40">
+                <input id="input-following" type="file" accept=".html,.htm,.json" class="absolute inset-0 h-full w-full opacity-0 cursor-pointer" />
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 mb-3 group-hover:scale-105 transition-transform">
+                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <line x1="19" y1="8" x2="19" y2="14"/>
+                    <line x1="22" y1="11" x2="16" y2="11"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-medium text-zinc-800 dark:text-zinc-200 mb-1">
+                  Drag & drop <span class="text-zinc-900 font-semibold dark:text-white">following.html</span>
+                </p>
+                <p class="text-xs text-zinc-400 dark:text-zinc-500">or click to browse from device</p>
+              </div>
+            </div>
+
+            <!-- Uploaded file details info box (Initially hidden) -->
+            <div id="info-following" class="hidden mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-600 dark:text-zinc-400">
+              <div class="flex items-center gap-2 truncate pr-2">
+                <svg class="h-4 w-4 text-emerald-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span id="name-following" class="font-mono truncate font-medium text-zinc-900 dark:text-zinc-100">following.html</span>
+                <span id="count-following" class="rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 font-mono">0 users</span>
+              </div>
+              <button id="btn-remove-following" type="button" class="text-xs text-rose-500 hover:text-rose-600 dark:text-rose-400 hover:underline shrink-0">
+                Remove
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Prominent Action Bar -->
+        <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <button id="btn-analyze" type="button" disabled class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 px-8 py-3.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white">
+            <svg id="analyze-spinner" class="hidden h-4 w-4 animate-spin text-current" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <svg id="analyze-icon" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span id="analyze-text">Analyze Unfollowers</span>
+          </button>
+
+          <button id="btn-reset" type="button" class="hidden inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-5 py-3 text-sm font-medium text-zinc-700 shadow-2xs hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+            <span>Reset Analysis</span>
+          </button>
+        </div>
+
+        <!-- Inline Status or Warning Message -->
+        <p id="upload-status" class="mt-3 text-center text-xs text-zinc-500 dark:text-zinc-400">
+          Upload both files above or click "Load Demo Data" to get started.
+        </p>
+      </section>
+
+      <!-- Results Section (Initially Hidden until analyzed) -->
+      <section id="results-section" class="hidden animate-in fade-in duration-300">
+        
+        <!-- Summary Metric Cards (SaaS Style) -->
+        <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <!-- Card 1: Following -->
+          <div class="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/60">
+            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Following</div>
+            <div id="stat-following" class="mt-1 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">0</div>
+            <div class="mt-1 text-[11px] text-zinc-400">People you follow</div>
+          </div>
+
+          <!-- Card 2: Followers -->
+          <div class="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/60">
+            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Followers</div>
+            <div id="stat-followers" class="mt-1 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">0</div>
+            <div class="mt-1 text-[11px] text-zinc-400">People following you</div>
+          </div>
+
+          <!-- Card 3: Unfollowers (Key Metric) -->
+          <div class="rounded-xl border border-rose-200/80 bg-rose-50/50 p-4 shadow-2xs dark:border-rose-900/40 dark:bg-rose-950/20 col-span-2 sm:col-span-1">
+            <div class="text-xs font-medium text-rose-700 dark:text-rose-400 flex items-center justify-between">
+              <span>Don't Follow Back</span>
+              <span class="inline-block h-2 w-2 rounded-full bg-rose-500"></span>
+            </div>
+            <div id="stat-unfollowers" class="mt-1 text-2xl font-bold tracking-tight text-rose-600 dark:text-rose-400 font-mono tabular-nums">0</div>
+            <div class="mt-1 text-[11px] text-rose-600/80 dark:text-rose-400/80">You follow &middot; they don't</div>
+          </div>
+
+          <!-- Card 4: Mutuals -->
+          <div class="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/60">
+            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Mutual Follows</div>
+            <div id="stat-mutuals" class="mt-1 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">0</div>
+            <div class="mt-1 text-[11px] text-zinc-400">Follow each other</div>
+          </div>
+
+          <!-- Card 5: Fans (They follow, you don't) -->
+          <div class="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/60">
+            <div class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Fans</div>
+            <div id="stat-fans" class="mt-1 text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">0</div>
+            <div class="mt-1 text-[11px] text-zinc-400">They follow &middot; you don't</div>
+          </div>
+        </div>
+
+        <!-- Controls Toolbar: Tabs + Search + Sort + View Toggle + Export -->
+        <div class="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/70">
+          
+          <!-- Category Filter Tabs -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 pb-4 dark:border-zinc-800">
+            <div class="inline-flex rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/80 text-xs font-medium" role="tablist">
+              <button id="tab-unfollowers" type="button" class="tab-btn active px-3 py-1.5 rounded-md bg-white text-zinc-900 shadow-2xs dark:bg-zinc-700 dark:text-white transition-all flex items-center gap-1.5">
+                <span>Not Following Back</span>
+                <span id="tab-count-unfollowers" class="rounded-full bg-rose-100 px-1.5 py-0.2 text-[10px] font-semibold text-rose-700 dark:bg-rose-950 dark:text-rose-300 font-mono">0</span>
+              </button>
+              <button id="tab-fans" type="button" class="tab-btn px-3 py-1.5 rounded-md text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-all flex items-center gap-1.5">
+                <span>Fans (You Don't Follow)</span>
+                <span id="tab-count-fans" class="rounded-full bg-zinc-200 px-1.5 py-0.2 text-[10px] font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300 font-mono">0</span>
+              </button>
+              <button id="tab-mutuals" type="button" class="tab-btn px-3 py-1.5 rounded-md text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-all flex items-center gap-1.5">
+                <span>Mutuals</span>
+                <span id="tab-count-mutuals" class="rounded-full bg-zinc-200 px-1.5 py-0.2 text-[10px] font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300 font-mono">0</span>
+              </button>
+              <button id="tab-all-following" type="button" class="tab-btn px-3 py-1.5 rounded-md text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-all flex items-center gap-1.5">
+                <span>All Following</span>
+                <span id="tab-count-all-following" class="rounded-full bg-zinc-200 px-1.5 py-0.2 text-[10px] font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300 font-mono">0</span>
+              </button>
+              <button id="tab-all-followers" type="button" class="tab-btn px-3 py-1.5 rounded-md text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-all flex items-center gap-1.5">
+                <span>All Followers</span>
+                <span id="tab-count-all-followers" class="rounded-full bg-zinc-200 px-1.5 py-0.2 text-[10px] font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300 font-mono">0</span>
+              </button>
+            </div>
+
+            <!-- Export Actions -->
+            <div class="flex items-center gap-2">
+              <button id="btn-copy-usernames" type="button" title="Copy all visible usernames to clipboard" class="inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-2xs hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors">
+                <svg class="h-3.5 w-3.5 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span id="copy-usernames-text">Copy Usernames</span>
+              </button>
+              <button id="btn-export-csv" type="button" class="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white transition-colors">
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Export as CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Secondary Toolbar: Search + Sort + View Layout (Grid/Table) -->
+          <div class="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            
+            <!-- Live Search Bar -->
+            <div class="relative flex-1 max-w-md">
+              <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input id="search-input" type="text" placeholder="Search usernames..." class="w-full rounded-lg border border-zinc-200 bg-zinc-50/50 pl-9 pr-8 py-2 text-xs text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:bg-white focus:outline-none dark:border-zinc-800 dark:bg-zinc-950/50 dark:text-zinc-100 dark:focus:border-zinc-600 transition-colors" />
+              <button id="btn-clear-search" type="button" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <!-- Sort and View Mode Selectors -->
+            <div class="flex items-center gap-2 justify-between sm:justify-end">
+              <!-- Sort Dropdown -->
+              <div class="flex items-center gap-1.5 text-xs text-zinc-500">
+                <span>Sort:</span>
+                <select id="sort-select" class="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-800 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
+                  <option value="az">Username (A &rarr; Z)</option>
+                  <option value="za">Username (Z &rarr; A)</option>
+                  <option value="original">Original Export Order</option>
+                </select>
+              </div>
+
+              <!-- View Layout Switcher (Grid / Table) -->
+              <div class="inline-flex rounded-lg border border-zinc-200 bg-white p-0.5 dark:border-zinc-800 dark:bg-zinc-900">
+                <button id="view-mode-table" type="button" title="Table View" class="view-btn active p-1.5 rounded-md bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white transition-colors">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <button id="view-mode-grid" type="button" title="Cards Grid View" class="view-btn p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Active Filter & Count Line -->
+          <div class="mt-3 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+            <div>
+              Showing <span id="current-count-text" class="font-semibold text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">0</span> accounts
+            </div>
+            <div id="filter-hint" class="text-zinc-400 text-[11px]">
+              Click "View Profile" to verify or unfollow on Instagram
+            </div>
+          </div>
+
+          <!-- Results Container (Table or Grid rendered via JS) -->
+          <div id="results-display-area" class="mt-4">
+            <!-- Dynamic Content Injected Here -->
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-20 border-t border-zinc-200 bg-white py-8 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">
+      <div class="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-zinc-800 dark:text-zinc-200">InstaUnfollowers</span>
+          <span>&middot;</span>
+          <span>100% Client-Side Open Tool</span>
+        </div>
+        <div>
+          This tool is not affiliated with, endorsed by, or connected to Instagram or Meta.
+        </div>
+      </div>
+    </footer>
+
+    <!-- Client-Side Vanilla JavaScript -->
+    <script>
+      (function() {
+        // App State
+        const state = {
+          followersFile: null,
+          followingFile: null,
+          followersList: [], // Array of { username, href, timestamp }
+          followingList: [], // Array of { username, href, timestamp }
+          followersSet: new Set(),
+          followingSet: new Set(),
+          analyzed: false,
+          activeTab: 'unfollowers', // 'unfollowers' | 'fans' | 'mutuals' | 'all-following' | 'all-followers'
+          searchQuery: '',
+          sortBy: 'az',
+          viewMode: 'table', // 'table' | 'grid'
+          isDarkMode: false
+        };
+
+        // DOM Elements
+        const dropzoneFollowers = document.getElementById('dropzone-followers');
+        const inputFollowers = document.getElementById('input-followers');
+        const badgeFollowers = document.getElementById('badge-followers');
+        const infoFollowers = document.getElementById('info-followers');
+        const nameFollowers = document.getElementById('name-followers');
+        const countFollowers = document.getElementById('count-followers');
+        const btnRemoveFollowers = document.getElementById('btn-remove-followers');
+
+        const dropzoneFollowing = document.getElementById('dropzone-following');
+        const inputFollowing = document.getElementById('input-following');
+        const badgeFollowing = document.getElementById('badge-following');
+        const infoFollowing = document.getElementById('info-following');
+        const nameFollowing = document.getElementById('name-following');
+        const countFollowing = document.getElementById('count-following');
+        const btnRemoveFollowing = document.getElementById('btn-remove-following');
+
+        const btnAnalyze = document.getElementById('btn-analyze');
+        const btnReset = document.getElementById('btn-reset');
+        const btnLoadSample = document.getElementById('btn-load-sample');
+        const uploadStatus = document.getElementById('upload-status');
+        const analyzeSpinner = document.getElementById('analyze-spinner');
+        const analyzeIcon = document.getElementById('analyze-icon');
+        const analyzeText = document.getElementById('analyze-text');
+
+        const resultsSection = document.getElementById('results-section');
+        const statFollowing = document.getElementById('stat-following');
+        const statFollowers = document.getElementById('stat-followers');
+        const statUnfollowers = document.getElementById('stat-unfollowers');
+        const statMutuals = document.getElementById('stat-mutuals');
+        const statFans = document.getElementById('stat-fans');
+
+        const tabUnfollowers = document.getElementById('tab-unfollowers');
+        const tabFans = document.getElementById('tab-fans');
+        const tabMutuals = document.getElementById('tab-mutuals');
+        const tabAllFollowing = document.getElementById('tab-all-following');
+        const tabAllFollowers = document.getElementById('tab-all-followers');
+
+        const tabCountUnfollowers = document.getElementById('tab-count-unfollowers');
+        const tabCountFans = document.getElementById('tab-count-fans');
+        const tabCountMutuals = document.getElementById('tab-count-mutuals');
+        const tabCountAllFollowing = document.getElementById('tab-count-all-following');
+        const tabCountAllFollowers = document.getElementById('tab-count-all-followers');
+
+        const searchInput = document.getElementById('search-input');
+        const btnClearSearch = document.getElementById('btn-clear-search');
+        const sortSelect = document.getElementById('sort-select');
+        const viewModeTable = document.getElementById('view-mode-table');
+        const viewModeGrid = document.getElementById('view-mode-grid');
+        const currentCountText = document.getElementById('current-count-text');
+        const resultsDisplayArea = document.getElementById('results-display-area');
+
+        const btnExportCsv = document.getElementById('btn-export-csv');
+        const btnCopyUsernames = document.getElementById('btn-copy-usernames');
+        const copyUsernamesText = document.getElementById('copy-usernames-text');
+
+        const btnThemeToggle = document.getElementById('btn-theme-toggle');
+        const iconSun = document.getElementById('icon-sun');
+        const iconMoon = document.getElementById('icon-moon');
+
+        // Dark Mode Initialization
+        function initTheme() {
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const stored = localStorage.getItem('theme');
+          state.isDarkMode = stored === 'dark' || (!stored && prefersDark);
+          applyTheme();
+        }
+
+        function applyTheme() {
+          if (state.isDarkMode) {
+            document.documentElement.classList.add('dark');
+            iconSun.classList.remove('hidden');
+            iconMoon.classList.add('hidden');
+          } else {
+            document.documentElement.classList.remove('dark');
+            iconSun.classList.add('hidden');
+            iconMoon.classList.remove('hidden');
+          }
+          localStorage.setItem('theme', state.isDarkMode ? 'dark' : 'light');
+        }
+
+        btnThemeToggle.addEventListener('click', () => {
+          state.isDarkMode = !state.isDarkMode;
+          applyTheme();
+        });
+
+        initTheme();
+
+        // Username normalization helper
+        // Standardize all extracted usernames: lowercase, stripped of leading @, stripped of trailing slashes, clean query params
+        function cleanUsername(raw) {
+          if (!raw) return '';
+          let user = raw.trim();
+          // Remove query params or hash if any
+          user = user.split('?')[0].split('#')[0];
+          // Remove leading @
+          user = user.replace(/^@+/, '');
+          // Remove trailing slash
+          user = user.replace(/\/+$/, '');
+          // If URL path, extract the last segment
+          if (user.includes('/')) {
+            const segments = user.split('/').filter(Boolean);
+            user = segments[segments.length - 1] || '';
+          }
+          return user.toLowerCase().trim();
+        }
+
+        // List of reserved IG keywords to ignore if encountered in links
+        const IG_RESERVED = new Set([
+          'terms', 'privacy', 'about', 'legal', 'explore', 'accounts', 'developer',
+          'directory', 'emails', 'help', 'stories', 'settings', 'direct', 'reels',
+          'meta', 'instagram', 'support', 'guides', 'threads', '_u'
+        ]);
+
+        function isValidUsername(user) {
+          if (!user || user.length < 1 || user.length > 30) return false;
+          if (IG_RESERVED.has(user)) return false;
+          // Valid IG usernames contain alphanumeric, periods, underscores
+          return /^[a-z0-9._]+$/i.test(user);
+        }
+
+        // HTML & JSON Parser
+        function parseInstagramContent(contentString, fileName) {
+          const usersMap = new Map();
+
+          // Try parsing as JSON first in case user exported JSON format
+          if (contentString.trim().startsWith('{') || contentString.trim().startsWith('[')) {
+            try {
+              const jsonData = JSON.parse(contentString);
+              // Handle various Instagram JSON export variations
+              const arrayCandidates = Array.isArray(jsonData) 
+                ? jsonData 
+                : (jsonData.relationships_following || jsonData.relationships_followers || jsonData.data || Object.values(jsonData));
+              
+              function recurseJson(item) {
+                if (!item) return;
+                if (Array.isArray(item)) {
+                  item.forEach(recurseJson);
+                } else if (typeof item === 'object') {
+                  if (item.value && typeof item.value === 'string') {
+                    const cleaned = cleanUsername(item.value);
+                    if (isValidUsername(cleaned) && !usersMap.has(cleaned)) {
+                      usersMap.set(cleaned, {
+                        username: cleaned,
+                        href: item.href || `https://www.instagram.com/${cleaned}/`,
+                        timestamp: item.timestamp ? new Date(item.timestamp * 1000).toLocaleDateString() : ''
+                      });
+                    }
+                  }
+                  if (item.string_list_data && Array.isArray(item.string_list_data)) {
+                    item.string_list_data.forEach(entry => {
+                      const uname = cleanUsername(entry.value || entry.href);
+                      if (isValidUsername(uname) && !usersMap.has(uname)) {
+                        usersMap.set(uname, {
+                          username: uname,
+                          href: entry.href || `https://www.instagram.com/${uname}/`,
+                          timestamp: entry.timestamp ? new Date(entry.timestamp * 1000).toLocaleDateString() : ''
+                        });
+                      }
+                    });
+                  }
+                  // Recurse object keys
+                  Object.values(item).forEach(recurseJson);
+                }
+              }
+
+              recurseJson(jsonData);
+
+              if (usersMap.size > 0) {
+                return Array.from(usersMap.values());
+              }
+            } catch (e) {
+              // Not JSON, continue to DOMParser
+            }
+          }
+
+          // Native DOMParser for HTML string
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(contentString, 'text/html');
+
+          // Extract from all <a> tags
+          const anchors = doc.querySelectorAll('a');
+          anchors.forEach(a => {
+            const href = a.getAttribute('href') || '';
+            const text = a.textContent ? a.textContent.trim() : '';
+
+            let candidate = '';
+
+            // Check href pattern for instagram.com/username
+            const hrefMatch = href.match(/instagram\.com(?:\/_u)?\/([A-Za-z0-9_.-]+)/i);
+            if (hrefMatch && hrefMatch[1]) {
+              candidate = hrefMatch[1];
+            } else if (text && !text.includes(' ') && isValidUsername(cleanUsername(text))) {
+              candidate = text;
+            } else if (href.startsWith('/') && href.length > 2) {
+              candidate = href.replace(/^\//, '').split('/')[0];
+            }
+
+            const username = cleanUsername(candidate);
+            if (isValidUsername(username) && !usersMap.has(username)) {
+              // Try to locate adjacent timestamp if Instagram included it
+              let timestamp = '';
+              const parent = a.closest('div') || a.parentElement;
+              if (parent) {
+                const nextDiv = parent.querySelector('div:not(:has(a))') || parent.nextElementSibling;
+                if (nextDiv && nextDiv.textContent) {
+                  const dateStr = nextDiv.textContent.trim();
+                  if (/\d{4}/.test(dateStr) || /ago|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec/i.test(dateStr)) {
+                    timestamp = dateStr;
+                  }
+                }
+              }
+
+              usersMap.set(username, {
+                username: username,
+                href: `https://www.instagram.com/${username}/`,
+                timestamp: timestamp
+              });
+            }
+          });
+
+          // Fallback: If no anchor tags matched (e.g. customized plaintext export)
+          if (usersMap.size === 0) {
+            const bodyText = doc.body ? doc.body.innerText || doc.body.textContent : contentString;
+            const lines = bodyText.split(/[\r\n\t,]+/);
+            lines.forEach(line => {
+              const u = cleanUsername(line);
+              if (isValidUsername(u) && !usersMap.has(u)) {
+                usersMap.set(u, {
+                  username: u,
+                  href: `https://www.instagram.com/${u}/`,
+                  timestamp: ''
+                });
+              }
+            });
+          }
+
+          return Array.from(usersMap.values());
+        }
+
+        // File Reading Helper using FileReader
+        function readFile(file) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
+          });
+        }
+
+        // Update UI when followers file is loaded
+        async function handleFollowersFile(file) {
+          if (!file) return;
+          try {
+            uploadStatus.textContent = 'Parsing followers file...';
+            const text = await readFile(file);
+            const parsed = parseInstagramContent(text, file.name);
+            
+            state.followersFile = file;
+            state.followersList = parsed;
+            state.followersSet = new Set(parsed.map(u => u.username));
+
+            // Update UI
+            nameFollowers.textContent = file.name;
+            countFollowers.textContent = `${parsed.length} accounts`;
+            badgeFollowers.classList.remove('hidden');
+            infoFollowers.classList.remove('hidden');
+            dropzoneFollowers.classList.add('border-emerald-500/40', 'bg-emerald-50/20');
+            
+            checkReadyState();
+          } catch (err) {
+            console.error(err);
+            uploadStatus.textContent = 'Error parsing followers file. Please verify it is a valid Instagram export.';
+          }
+        }
+
+        // Update UI when following file is loaded
+        async function handleFollowingFile(file) {
+          if (!file) return;
+          try {
+            uploadStatus.textContent = 'Parsing following file...';
+            const text = await readFile(file);
+            const parsed = parseInstagramContent(text, file.name);
+
+            state.followingFile = file;
+            state.followingList = parsed;
+            state.followingSet = new Set(parsed.map(u => u.username));
+
+            // Update UI
+            nameFollowing.textContent = file.name;
+            countFollowing.textContent = `${parsed.length} accounts`;
+            badgeFollowing.classList.remove('hidden');
+            infoFollowing.classList.remove('hidden');
+            dropzoneFollowing.classList.add('border-emerald-500/40', 'bg-emerald-50/20');
+
+            checkReadyState();
+          } catch (err) {
+            console.error(err);
+            uploadStatus.textContent = 'Error parsing following file. Please verify it is a valid Instagram export.';
+          }
+        }
+
+        function checkReadyState() {
+          if (state.followersList.length > 0 && state.followingList.length > 0) {
+            btnAnalyze.disabled = false;
+            uploadStatus.textContent = `Ready! Loaded ${state.followersList.length} followers and ${state.followingList.length} following accounts.`;
+          } else if (state.followersList.length > 0) {
+            btnAnalyze.disabled = true;
+            uploadStatus.textContent = `Followers file loaded (${state.followersList.length} accounts). Please upload following.html next.`;
+          } else if (state.followingList.length > 0) {
+            btnAnalyze.disabled = true;
+            uploadStatus.textContent = `Following file loaded (${state.followingList.length} accounts). Please upload followers_1.html next.`;
+          } else {
+            btnAnalyze.disabled = true;
+            uploadStatus.textContent = 'Upload both files above or click "Load Demo Data" to get started.';
+          }
+        }
+
+        // Drag and Drop listeners for Followers
+        inputFollowers.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFollowersFile(e.target.files[0]);
+          }
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropzoneFollowers.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzoneFollowers.classList.add('dropzone-active');
+          });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropzoneFollowers.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzoneFollowers.classList.remove('dropzone-active');
+          });
+        });
+
+        dropzoneFollowers.addEventListener('drop', (e) => {
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFollowersFile(e.dataTransfer.files[0]);
+          }
+        });
+
+        btnRemoveFollowers.addEventListener('click', () => {
+          state.followersFile = null;
+          state.followersList = [];
+          state.followersSet.clear();
+          inputFollowers.value = '';
+          badgeFollowers.classList.add('hidden');
+          infoFollowers.classList.add('hidden');
+          dropzoneFollowers.classList.remove('border-emerald-500/40', 'bg-emerald-50/20');
+          checkReadyState();
+        });
+
+        // Drag and Drop listeners for Following
+        inputFollowing.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFollowingFile(e.target.files[0]);
+          }
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+          dropzoneFollowing.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzoneFollowing.classList.add('dropzone-active');
+          });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          dropzoneFollowing.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzoneFollowing.classList.remove('dropzone-active');
+          });
+        });
+
+        dropzoneFollowing.addEventListener('drop', (e) => {
+          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFollowingFile(e.dataTransfer.files[0]);
+          }
+        });
+
+        btnRemoveFollowing.addEventListener('click', () => {
+          state.followingFile = null;
+          state.followingList = [];
+          state.followingSet.clear();
+          inputFollowing.value = '';
+          badgeFollowing.classList.add('hidden');
+          infoFollowing.classList.add('hidden');
+          dropzoneFollowing.classList.remove('border-emerald-500/40', 'bg-emerald-50/20');
+          checkReadyState();
+        });
+
+        // Demo Sample Data Generator
+        btnLoadSample.addEventListener('click', () => {
+          // Realistic Instagram sample usernames
+          const demoFollowers = [
+            'alex_designs', 'travel_wanderer', 'urban_coffee_lab', 'marcus_photo',
+            'claire_smith', 'tech_digest', 'david_k', 'sophia.wellness',
+            'elena_v', 'nature_peaks', 'santiago_dev', 'maya.reads',
+            'lucas_art', 'olivia_fitness', 'noah_runs', 'emma_bakes',
+            'liam_music', 'isabella_style', 'ethan_visuals', 'charlotte_film',
+            'mason_cycling', 'amelia_ceramics', 'harper_draws', 'sam_arch'
+          ];
+
+          // Accounts you follow: includes mutuals + unfollowers (celebrities, brands, acquaintances)
+          const demoFollowing = [
+            // Mutuals
+            'alex_designs', 'travel_wanderer', 'marcus_photo', 'claire_smith',
+            'david_k', 'sophia.wellness', 'lucas_art', 'olivia_fitness',
+            'noah_runs', 'sam_arch',
+            // Unfollowers (You follow them, but they don't follow back)
+            'natgeo', 'nasa', 'wired', 'verge', 'nytimes',
+            'designboom', 'hypebeast', 'complex', 'archdigest', 'spotify',
+            'nike', 'apple', 'airbnb', 'patagonia', 'dribbble',
+            'awwwards', 'stripe', 'figma', 'linear_app', 'github',
+            'james_clear', 'lexfridman', 'timferriss', 'mkbhd', 'austinkleon'
+          ];
+
+          state.followersList = demoFollowers.map((u, i) => ({
+            username: u,
+            href: `https://www.instagram.com/${u}/`,
+            timestamp: `Oct ${10 - (i % 8)}, 2024`
+          }));
+          state.followersSet = new Set(demoFollowers);
+
+          state.followingList = demoFollowing.map((u, i) => ({
+            username: u,
+            href: `https://www.instagram.com/${u}/`,
+            timestamp: `Aug ${15 - (i % 12)}, 2024`
+          }));
+          state.followingSet = new Set(demoFollowing);
+
+          // Update UI representation
+          nameFollowers.textContent = 'demo_followers_1.html';
+          countFollowers.textContent = `${demoFollowers.length} accounts`;
+          badgeFollowers.classList.remove('hidden');
+          infoFollowers.classList.remove('hidden');
+          dropzoneFollowers.classList.add('border-emerald-500/40', 'bg-emerald-50/20');
+
+          nameFollowing.textContent = 'demo_following.html';
+          countFollowing.textContent = `${demoFollowing.length} accounts`;
+          badgeFollowing.classList.remove('hidden');
+          infoFollowing.classList.remove('hidden');
+          dropzoneFollowing.classList.add('border-emerald-500/40', 'bg-emerald-50/20');
+
+          btnAnalyze.disabled = false;
+          uploadStatus.textContent = 'Sample data loaded successfully! Click "Analyze Unfollowers" below to see the results.';
+
+          // Automatically trigger analyze for convenience
+          runAnalysis();
+        });
+
+        // Run Analysis Logic
+        function runAnalysis() {
+          analyzeSpinner.classList.remove('hidden');
+          analyzeIcon.classList.add('hidden');
+          analyzeText.textContent = 'Comparing accounts...';
+          btnAnalyze.disabled = true;
+
+          setTimeout(() => {
+            // Comparison logic
+            const followingUsers = state.followingList.map(item => item.username);
+            const followersSet = state.followersSet;
+            const followingSet = state.followingSet;
+
+            // 1. Not following back: present in following, NOT in followers
+            const unfollowers = state.followingList.filter(item => !followersSet.has(item.username));
+            
+            // 2. Fans: present in followers, NOT in following
+            const fans = state.followersList.filter(item => !followingSet.has(item.username));
+
+            // 3. Mutuals: present in both
+            const mutuals = state.followingList.filter(item => followersSet.has(item.username));
+
+            // Cache in state
+            state.unfollowers = unfollowers;
+            state.fans = fans;
+            state.mutuals = mutuals;
+            state.analyzed = true;
+
+            // Update Metric Counters
+            statFollowing.textContent = state.followingList.length.toLocaleString();
+            statFollowers.textContent = state.followersList.length.toLocaleString();
+            statUnfollowers.textContent = unfollowers.length.toLocaleString();
+            statMutuals.textContent = mutuals.length.toLocaleString();
+            statFans.textContent = fans.length.toLocaleString();
+
+            // Update Tab Badges
+            tabCountUnfollowers.textContent = unfollowers.length;
+            tabCountFans.textContent = fans.length;
+            tabCountMutuals.textContent = mutuals.length;
+            tabCountAllFollowing.textContent = state.followingList.length;
+            tabCountAllFollowers.textContent = state.followersList.length;
+
+            // Reset UI state
+            analyzeSpinner.classList.add('hidden');
+            analyzeIcon.classList.remove('hidden');
+            analyzeText.textContent = 'Re-analyze';
+            btnAnalyze.disabled = false;
+            btnReset.classList.remove('hidden');
+
+            // Show results section
+            resultsSection.classList.remove('hidden');
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+            // Render active view
+            renderCurrentView();
+          }, 300);
+        }
+
+        btnAnalyze.addEventListener('click', runAnalysis);
+
+        // Reset Handler
+        btnReset.addEventListener('click', () => {
+          state.followersFile = null;
+          state.followingFile = null;
+          state.followersList = [];
+          state.followingList = [];
+          state.followersSet.clear();
+          state.followingSet.clear();
+          state.unfollowers = [];
+          state.fans = [];
+          state.mutuals = [];
+          state.analyzed = false;
+
+          inputFollowers.value = '';
+          inputFollowing.value = '';
+          badgeFollowers.classList.add('hidden');
+          infoFollowers.classList.add('hidden');
+          dropzoneFollowers.classList.remove('border-emerald-500/40', 'bg-emerald-50/20');
+
+          badgeFollowing.classList.add('hidden');
+          infoFollowing.classList.add('hidden');
+          dropzoneFollowing.classList.remove('border-emerald-500/40', 'bg-emerald-50/20');
+
+          btnAnalyze.disabled = true;
+          btnReset.classList.add('hidden');
+          resultsSection.classList.add('hidden');
+          analyzeText.textContent = 'Analyze Unfollowers';
+          uploadStatus.textContent = 'Upload both files above or click "Load Demo Data" to get started.';
+        });
+
+        // Tab Navigation
+        const tabs = [
+          { btn: tabUnfollowers, id: 'unfollowers' },
+          { btn: tabFans, id: 'fans' },
+          { btn: tabMutuals, id: 'mutuals' },
+          { btn: tabAllFollowing, id: 'all-following' },
+          { btn: tabAllFollowers, id: 'all-followers' },
+        ];
+
+        tabs.forEach(({ btn, id }) => {
+          btn.addEventListener('click', () => {
+            tabs.forEach(t => {
+              t.btn.classList.remove('active', 'bg-white', 'text-zinc-900', 'shadow-2xs', 'dark:bg-zinc-700', 'dark:text-white');
+              t.btn.classList.add('text-zinc-600', 'hover:text-zinc-900', 'dark:text-zinc-400', 'dark:hover:text-white');
+            });
+            btn.classList.add('active', 'bg-white', 'text-zinc-900', 'shadow-2xs', 'dark:bg-zinc-700', 'dark:text-white');
+            btn.classList.remove('text-zinc-600', 'dark:text-zinc-400');
+            state.activeTab = id;
+            renderCurrentView();
+          });
+        });
+
+        // View Mode Switcher
+        viewModeTable.addEventListener('click', () => {
+          state.viewMode = 'table';
+          viewModeTable.classList.add('active', 'bg-zinc-100', 'text-zinc-900', 'dark:bg-zinc-800', 'dark:text-white');
+          viewModeTable.classList.remove('text-zinc-400');
+          viewModeGrid.classList.remove('active', 'bg-zinc-100', 'text-zinc-900', 'dark:bg-zinc-800', 'dark:text-white');
+          viewModeGrid.classList.add('text-zinc-400');
+          renderCurrentView();
+        });
+
+        viewModeGrid.addEventListener('click', () => {
+          state.viewMode = 'grid';
+          viewModeGrid.classList.add('active', 'bg-zinc-100', 'text-zinc-900', 'dark:bg-zinc-800', 'dark:text-white');
+          viewModeGrid.classList.remove('text-zinc-400');
+          viewModeTable.classList.remove('active', 'bg-zinc-100', 'text-zinc-900', 'dark:bg-zinc-800', 'dark:text-white');
+          viewModeTable.classList.add('text-zinc-400');
+          renderCurrentView();
+        });
+
+        // Search and Sort Listeners
+        searchInput.addEventListener('input', (e) => {
+          state.searchQuery = e.target.value.toLowerCase().trim();
+          btnClearSearch.classList.toggle('hidden', state.searchQuery.length === 0);
+          renderCurrentView();
+        });
+
+        btnClearSearch.addEventListener('click', () => {
+          searchInput.value = '';
+          state.searchQuery = '';
+          btnClearSearch.classList.add('hidden');
+          renderCurrentView();
+        });
+
+        sortSelect.addEventListener('change', (e) => {
+          state.sortBy = e.target.value;
+          renderCurrentView();
+        });
+
+        // Helper to get raw data for the current active tab
+        function getActiveDataset() {
+          switch (state.activeTab) {
+            case 'unfollowers':
+              return state.unfollowers || [];
+            case 'fans':
+              return state.fans || [];
+            case 'mutuals':
+              return state.mutuals || [];
+            case 'all-following':
+              return state.followingList || [];
+            case 'all-followers':
+              return state.followersList || [];
+            default:
+              return [];
+          }
+        }
+
+        // Color generator for avatar placeholder based on username
+        function getAvatarColor(username) {
+          const colors = [
+            'bg-zinc-800 text-white',
+            'bg-slate-700 text-white',
+            'bg-stone-700 text-white',
+            'bg-neutral-800 text-white',
+            'bg-zinc-700 text-white'
+          ];
+          let hash = 0;
+          for (let i = 0; i < username.length; i++) {
+            hash = username.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          return colors[Math.abs(hash) % colors.length];
+        }
+
+        // Render Current Filtered and Sorted View
+        function renderCurrentView() {
+          let list = [...getActiveDataset()];
+
+          // Apply search filter
+          if (state.searchQuery) {
+            list = list.filter(item => item.username.toLowerCase().includes(state.searchQuery));
+          }
+
+          // Apply sorting
+          if (state.sortBy === 'az') {
+            list.sort((a, b) => a.username.localeCompare(b.username));
+          } else if (state.sortBy === 'za') {
+            list.sort((a, b) => b.username.localeCompare(a.username));
+          }
+          // 'original' preserves the array order as parsed
+
+          currentCountText.textContent = list.length.toLocaleString();
+
+          // Empty state handling
+          if (list.length === 0) {
+            resultsDisplayArea.innerHTML = `
+              <div class="flex flex-col items-center justify-center py-16 text-center">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 mb-3">
+                  <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
+                <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">No accounts found</h4>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400 max-w-sm">
+                  ${state.searchQuery ? `No matches found for "${escapeHtml(state.searchQuery)}". Try clearing your search.` : 'There are no accounts in this category.'}
+                </p>
+              </div>
+            `;
+            return;
+          }
+
+          if (state.viewMode === 'table') {
+            renderTableView(list);
+          } else {
+            renderGridView(list);
+          }
+        }
+
+        function escapeHtml(str) {
+          if (!str) return '';
+          return str.replace(/[&<>"']/g, function(m) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+          });
+        }
+
+        // Render Table View
+        function renderTableView(list) {
+          const rowsHtml = list.map((item, index) => {
+            const isUnfollower = !state.followersSet.has(item.username);
+            const isMutual = state.followersSet.has(item.username) && state.followingSet.has(item.username);
+            const isFan = state.followersSet.has(item.username) && !state.followingSet.has(item.username);
+
+            let statusBadge = '';
+            if (isUnfollower) {
+              statusBadge = '<span class="inline-flex items-center gap-1 rounded-full border border-rose-500/20 bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400">Doesn\'t follow back</span>';
+            } else if (isMutual) {
+              statusBadge = '<span class="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">Mutual friend</span>';
+            } else if (isFan) {
+              statusBadge = '<span class="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-400">Follows you</span>';
+            }
+
+            const initial = item.username.charAt(0).toUpperCase();
+            const avatarColor = getAvatarColor(item.username);
+
+            return `
+              <tr class="group border-b border-zinc-100 hover:bg-zinc-50/80 dark:border-zinc-800/80 dark:hover:bg-zinc-800/40 transition-colors">
+                <td class="py-3 px-3 text-xs text-zinc-400 font-mono tabular-nums w-12 text-center">
+                  ${index + 1}
+                </td>
+                <td class="py-3 px-3">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${avatarColor}">
+                      ${initial}
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <span class="font-medium text-sm text-zinc-900 dark:text-zinc-100 truncate">
+                          @${escapeHtml(item.username)}
+                        </span>
+                        <button type="button" class="btn-copy-one text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity p-0.5" data-username="${escapeHtml(item.username)}" title="Copy username">
+                          <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        </button>
+                      </div>
+                      ${item.timestamp ? `<span class="text-[11px] text-zinc-400">Export date: ${escapeHtml(item.timestamp)}</span>` : ''}
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-3 hidden sm:table-cell">
+                  ${statusBadge}
+                </td>
+                <td class="py-3 px-3 text-right">
+                  <a href="https://www.instagram.com/${encodeURIComponent(item.username)}/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-medium text-zinc-800 shadow-2xs hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 transition-colors whitespace-nowrap">
+                    <span>View Profile</span>
+                    <svg class="h-3 w-3 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </a>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          resultsDisplayArea.innerHTML = `
+            <div class="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-zinc-200/80 bg-zinc-50/70 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
+                    <th class="py-2.5 px-3 w-12 text-center">#</th>
+                    <th class="py-2.5 px-3">Account</th>
+                    <th class="py-2.5 px-3 hidden sm:table-cell">Status</th>
+                    <th class="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/80 bg-white dark:bg-zinc-900">
+                  ${rowsHtml}
+                </tbody>
+              </table>
+            </div>
+          `;
+
+          attachIndividualCopyListeners();
+        }
+
+        // Render Grid View
+        function renderGridView(list) {
+          const cardsHtml = list.map((item, index) => {
+            const isUnfollower = !state.followersSet.has(item.username);
+            const isMutual = state.followersSet.has(item.username) && state.followingSet.has(item.username);
+            const isFan = state.followersSet.has(item.username) && !state.followingSet.has(item.username);
+
+            let statusBadge = '';
+            if (isUnfollower) {
+              statusBadge = '<span class="inline-flex items-center rounded-full border border-rose-500/20 bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-400">Doesn\'t follow back</span>';
+            } else if (isMutual) {
+              statusBadge = '<span class="inline-flex items-center rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[10px] font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300">Mutual friend</span>';
+            } else if (isFan) {
+              statusBadge = '<span class="inline-flex items-center rounded-full border border-emerald-500/20 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-400">Follows you</span>';
+            }
+
+            const initial = item.username.charAt(0).toUpperCase();
+            const avatarColor = getAvatarColor(item.username);
+
+            return `
+              <div class="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900 flex flex-col justify-between hover:border-zinc-300 dark:hover:border-zinc-700 transition-all">
+                <div>
+                  <div class="flex items-start justify-between gap-2 mb-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${avatarColor}">
+                      ${initial}
+                    </div>
+                    <span class="text-xs text-zinc-400 font-mono tabular-nums">#${index + 1}</span>
+                  </div>
+                  <h4 class="font-semibold text-sm text-zinc-900 dark:text-zinc-100 truncate mb-1" title="@${escapeHtml(item.username)}">
+                    @${escapeHtml(item.username)}
+                  </h4>
+                  <div class="mb-3">
+                    ${statusBadge}
+                  </div>
+                </div>
+
+                <div class="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+                  <button type="button" class="btn-copy-one text-xs text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 flex items-center gap-1 transition-colors" data-username="${escapeHtml(item.username)}">
+                    <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span>Copy</span>
+                  </button>
+                  <a href="https://www.instagram.com/${encodeURIComponent(item.username)}/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-medium text-zinc-800 shadow-2xs hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 transition-colors">
+                    <span>View Profile</span>
+                    <svg class="h-3 w-3 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </a>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          resultsDisplayArea.innerHTML = `
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+              ${cardsHtml}
+            </div>
+          `;
+
+          attachIndividualCopyListeners();
+        }
+
+        // Attach Copy Button Listeners
+        function attachIndividualCopyListeners() {
+          const copyButtons = document.querySelectorAll('.btn-copy-one');
+          copyButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.preventDefault();
+              const username = btn.getAttribute('data-username');
+              if (username) {
+                navigator.clipboard.writeText(username).then(() => {
+                  const originalHtml = btn.innerHTML;
+                  btn.innerHTML = `<span class="text-emerald-600 dark:text-emerald-400 text-xs font-medium">Copied!</span>`;
+                  setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                  }, 1500);
+                });
+              }
+            });
+          });
+        }
+
+        // Export to CSV Functionality
+        btnExportCsv.addEventListener('click', () => {
+          let list = [...getActiveDataset()];
+          if (state.searchQuery) {
+            list = list.filter(item => item.username.toLowerCase().includes(state.searchQuery));
+          }
+          if (list.length === 0) {
+            alert('No records available to export.');
+            return;
+          }
+
+          const csvRows = [
+            ['Username', 'Profile URL', 'Relationship Status', 'Timestamp']
+          ];
+
+          list.forEach(item => {
+            let status = 'Following';
+            if (!state.followersSet.has(item.username)) {
+              status = 'Does Not Follow Back';
+            } else if (state.followersSet.has(item.username) && state.followingSet.has(item.username)) {
+              status = 'Mutual Follower';
+            } else if (state.followersSet.has(item.username) && !state.followingSet.has(item.username)) {
+              status = 'Fan (Follows You Only)';
+            }
+
+            csvRows.push([
+              item.username,
+              `https://www.instagram.com/${item.username}/`,
+              status,
+              item.timestamp || ''
+            ]);
+          });
+
+          const csvContent = csvRows
+            .map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+            .join('\r\n');
+
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const dateStr = new Date().toISOString().slice(0, 10);
+          link.setAttribute('href', url);
+          link.setAttribute('download', `instagram_${state.activeTab}_${dateStr}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        });
+
+        // Copy All Usernames to Clipboard
+        btnCopyUsernames.addEventListener('click', () => {
+          let list = [...getActiveDataset()];
+          if (state.searchQuery) {
+            list = list.filter(item => item.username.toLowerCase().includes(state.searchQuery));
+          }
+          if (list.length === 0) return;
+
+          const text = list.map(item => item.username).join('\n');
+          navigator.clipboard.writeText(text).then(() => {
+            copyUsernamesText.textContent = `Copied ${list.length}!`;
+            setTimeout(() => {
+              copyUsernamesText.textContent = 'Copy Usernames';
+            }, 1800);
+          });
+        });
+
+      })();
+    </script>
+  </body>
+</html>

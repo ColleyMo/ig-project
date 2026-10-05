@@ -1,0 +1,6 @@
+{
+  "name": "InstaUnfollowers Analyzer",
+  "description": "Private, 100% client-side dashboard to analyze Instagram HTML export files and see who doesn't follow you back.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
